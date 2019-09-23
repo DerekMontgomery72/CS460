@@ -1,26 +1,8 @@
-/********************************************************************
-Copyright 2010-2017 K.C. Wang, <kwang@eecs.wsu.edu>
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-********************************************************************/
-
 // defines.h file
 
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
-
-#define printf kprintf
 
 #define UART0_BASE_ADDR 0x101f1000
 #define UART0_DR   (*((volatile u32 *)(UART0_BASE_ADDR + 0x000)))
@@ -51,12 +33,37 @@ typedef unsigned int   u32;
 #define SIC_ENSET     (*((volatile u32 *)(SIC_BASE_ADDR + 0x008)))
 #define SIC_PICENSET  (*((volatile u32 *)(SIC_BASE_ADDR + 0x020)))
 
-#define LINES  4
-#define N_SCAN 64
-
 #define BLUE   0
 #define GREEN  1
 #define RED    2
-#define WHITE  3
-#define CYAN   4
-#define YELLOW 5
+#define CYAN   3
+#define YELLOW 4
+#define PURPLE 5
+#define WHITE  6
+
+#define  SSIZE 1024
+
+#define  FREE   0
+#define  READY  1
+#define  SLEEP  2
+#define  BLOCK  3
+#define  ZOMBIE 4
+#define  printf  kprintf
+
+typedef struct proc{
+    struct proc *next;      // next proc pointer       
+    int  *ksp;              // saved sp: at byte offset 4 
+    int   pid;              // process ID
+    int   ppid;             // parent process pid 
+    int   status;           // PROC status=FREE|READY, etc. 
+    int   priority;         // scheduling priority 
+
+    int   event;            // event value to sleep on
+    int   exitCode;         // exit value
+
+    struct proc *child;     // first child PROC pointer       
+    struct proc *sibling;   // sibling PROC pointer  
+    struct proc *parent;    // parent PROC pointer       
+
+    int   kstack[1024];     // process stack                 
+}PROC;

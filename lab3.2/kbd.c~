@@ -79,8 +79,24 @@ void kbd_handler()
     if(code == CONTROL)
       control = 0;
     release = 0;
-  }
+  }  
+  if(code & 0x80){ // key release: Only catch release on shift, control
+   
+    
+    code &= 0x7F; // mask out bit 7
+   
+    
+    if(code == LSHIFT || code == RSHIFT){
+      shift = 0; // released the shift key
+      printf("Shift Release\n");
 
+    }
+    if(code == CONTROL)
+      control = 0;// release the Control key
+   
+   
+    return;
+  }
   
   if(third == 0){
   
@@ -181,11 +197,21 @@ int kgetc()
   return c;
 }
 
-int kgets()
+int kgets(char *s)
 {
   char c;
-  while(c != '\r'){
-   c = kgetc();
-  }
+  if(c = kgetc())
+    {
+      
+      while(c != '\r' && c && c!= '\0' ){
+       
+	*s = c;
+	s++;
+	c = kgetc();
+      }
+     
+      *s='\0';
+    }
+  return;
 }
 
