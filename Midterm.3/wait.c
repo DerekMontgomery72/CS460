@@ -41,6 +41,7 @@ int kwakeup(int event)
     }
   
   int_on(sr);
+  // tswitch();
 }
 
       

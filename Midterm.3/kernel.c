@@ -184,9 +184,9 @@ int scheduler()
 
 int menu()
 {
-  printf("------- menu --------\n");
-  printf("switch fork exit wait\n");
-  printf("---------------------\n");
+  printf("------------ menu --------\n");
+  printf("switch fork exit wait pipe\n");
+  printf("--------------------------\n");
 }  
     
 int do_exit()
@@ -212,6 +212,8 @@ int do_wait()
   printf("proc %d wait for a ZOMBIE child %d ststus=%d\n",
 	 running->pid, pid, status);
 }
+
+
 
 int body()
 {
@@ -247,14 +249,15 @@ int body()
     printf("COMMAND: %s : \n",command);
     
     if (strcmp(command, "switch")==0)
-       tswitch();
+      tswitch();
     if (strcmp(command, "fork")==0)
-       kfork((int)body, 1);
+      kfork((int)body, 1);
     if (strcmp(command, "exit")==0)
-       do_exit();
+      do_exit();
     if (strcmp(command, "wait")==0)
       do_wait();
-
+    if (strcmp(command, "pipe")==0)
+      runPipe();
    
   }
 }

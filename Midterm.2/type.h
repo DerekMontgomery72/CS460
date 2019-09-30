@@ -49,6 +49,7 @@ typedef unsigned int   u32;
 #define  SLEEP  2
 #define  BLOCK  3
 #define  ZOMBIE 4
+#define  BUSY   5
 #define  printf  kprintf
 
 typedef struct proc{
@@ -77,3 +78,10 @@ typedef struct pipe{
 
 
 }PIPE;
+
+typedef struct uart{
+  char *base;
+  int n;
+}UART;
+
+UART uart[4];

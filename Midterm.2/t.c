@@ -8,7 +8,12 @@ int color;
 #include "exceptions.c"
 #include "kernel.c"
 #include "wait.c"
+#include "uart.c"
 #include "pipe.c"
+
+
+
+
 
 void copy_vectors(void) {
     extern u32 vectors_start;
@@ -45,6 +50,9 @@ int main()
 
    fbuf_init();
    kbd_init();
+   uart_init();
+   pipe_init();
+   
    
    /* enable timer0,1, uart0,1 SIC interrupts */
    VIC_INTENABLE |= (1<<4);  // timer0,1 at bit4 

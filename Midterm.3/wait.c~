@@ -11,7 +11,7 @@ int ksleep(int event)
     running->status = SLEEP;
    
     int_on(sr);
-    tswitch();
+    // tswitch();
    
 }
 
@@ -41,6 +41,7 @@ int kwakeup(int event)
     }
   
   int_on(sr);
+  tswitch();
 }
 
       
