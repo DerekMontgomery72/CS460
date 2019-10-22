@@ -1,3 +1,10 @@
+
+// Wait.C FIle
+// Derek Montgomery
+// Student ID 11508236
+
+
+
 int ksleep(int event)
 {
   //record event value in running PROC.event;
@@ -5,13 +12,15 @@ int ksleep(int event)
   //switch process
   int sr = int_off();
   
-    printf("proc %d going to sleep on event=%x\n", running->pid, event);
-    
-    running->event = event;
-    running->status = SLEEP;
-   
-    int_on(sr);
-    tswitch();
+  printf("proc %d going to sleep on event=%x\n", running->pid, event);
+  
+  running->event = event;
+  running->status = SLEEP;
+  printf("Put to Sleep\n");
+  
+  int_on(sr);
+  
+  tswitch();
    
 }
 
@@ -122,6 +131,13 @@ int kwait(int *status)
 }
 
 
+int timerInsert(int time, TQE *t){
+  // int sr= int_off();
+  tEnqueue(&timerQueue, t);
+  printf("PROC %d inserted into TimerQueue\n",timerQueue->pid);
+  //  int_on(sr);
+  //  ksleep((int)running->pid);
+  //tswitch();
+  return 0;
 
-
-
+}

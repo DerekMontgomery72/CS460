@@ -1,12 +1,21 @@
+
+//#kernel.c
+//Derek Montgomery
+//WSUID: 11508236
+
 #define NPROC 9
-PROC proc[NPROC], *running, *freeList, *readyQueue, *sleepList;
+
+
+PROC proc[NPROC], *freeList, *readyQueue, *sleepList;
 int procsize = sizeof(PROC);
 
+int ksleep(int event);
 int body();
 
 int init()
 {
-  int i, j; 
+  int i, j;
+  TQE *t; 
   PROC *p;
   kprintf("kernel_init()\n");
   for (i=0; i<NPROC; i++){
@@ -15,6 +24,16 @@ int init()
     p->status = READY;
     p->next = p + 1;
   }
+  for(i=0; i<NTIME; i++)
+    {
+      t = &timers[i];
+      t->event = 0;
+      t->sleeping = 0;
+      t->pid = 0;
+      t->time = 0;
+      t->next = 0;
+      strcpy(t->display,"[0,00]->");
+    }
   proc[NPROC-1].next = 0; // circular proc list
   freeList = &proc[0];
   readyQueue = 0;
@@ -184,9 +203,9 @@ int scheduler()
 
 int menu()
 {
-  printf("------------ menu --------\n");
-  printf("switch fork exit wait pipe\n");
-  printf("--------------------------\n");
+  printf("------------ menu ---------------\n");
+  printf("switch fork exit wait pipe tsleep\n");
+  printf("---------------------------------\n");
 }  
     
 int do_exit()
@@ -213,6 +232,71 @@ int do_wait()
 	 running->pid, pid, status);
 }
 
+TQE *get_TQE(){
+  int i;
+  TQE *t;
+  for(i = 0; i<NTIME; i++){
+    t = &timers[i];
+    if(t->pid == 0){
+      return t;
+    }
+  
+  }
+  printf("No available procs to put to sleep\n");
+  return 0;
+
+}
+
+int do_timer()
+{
+  int command[20];
+  char sTime[14];
+  int timeToSleep;
+  
+  while(1){
+    printf("Please enter a time for new entry");
+    kgets(sTime);
+    if(readyQueue->pid == 0){
+      kfork((int)do_timer,1);
+    }
+    
+ 
+  printf("\n");
+  int sr = int_off();
+  timeToSleep = atoi(sTime);
+  printf("Time For sleeping: %d\n",timeToSleep);
+  
+  TQE *t = get_TQE();
+  if(t == 0){
+    printf("Error unable to find open spot in queue\n");
+    return 1;
+  }
+  
+  t->sleeping = running;
+  t->event = (int)running->pid;
+  t->time = timeToSleep;
+  t->pid = running->pid;
+  t->display[2] = (t->pid/10);
+
+ 
+  
+  running->status = SLEEP;
+  running->event = t->event;
+  tEnqueue(&timerQueue,t);
+  // tswitch();
+  int_on(sr);
+  tswitch();
+  tswitch();
+  printf("Before TSwitch()\n");
+  printList("readyQueue", readyQueue);
+  tswitch();
+  // timerInsert(timeToSleep,t);
+
+  }
+  return 0;
+  
+  
+}
 
 
 int body()
@@ -258,7 +342,10 @@ int body()
       do_wait();
     if (strcmp(command, "pipe")==0)
       runPipe();
-   
+    if(strcmp(command, "tsleep")==0){
+      timer_start(0);
+      do_timer();
+    }
   }
 }
 

@@ -1,19 +1,25 @@
 int color;
 
 #include "type.h"
-//#include "timer.c"
 #include "string.c"
-#include "queue.c"  // use provided queue.obj  during linking
+  // use provided queue.obj  during linking
 #include "kbd.c"    // use provided kbd.obj    during linking
 #include "vid.c"
 #include "exceptions.c"
+#include "queue.c"
+#include "timer.c"
+
 #include "kernel.c"
 #include "wait.c"
 #include "uart.c"
 #include "pipe.c"
 
 
+void timer_handler();
 
+
+
+TIMER *tp[4];
 
 
 void copy_vectors(void) {
@@ -31,6 +37,7 @@ void IRQ_handler()
 {
     int vicstatus, sicstatus;
     int ustatus, kstatus;
+    
 
     // read VIC status register to find out which interrupt
     vicstatus = VIC_STATUS; // VIC_STATUS=0x10140000=status reg
@@ -40,7 +47,13 @@ void IRQ_handler()
           kbd_handler();
        }
     }
+     if(vicstatus & (1<<4)){
+      if(*(tp[0]->base+TVALUE) == 0) //timer 0
+	timer_handler(0);
+    }
 }
+
+
 
 int body();
 
@@ -49,6 +62,7 @@ int main()
    color = WHITE;
    row = col = 0; 
 
+   
    fbuf_init();
    kbd_init();
    uart_init();
@@ -63,8 +77,12 @@ int main()
    /* enable KBD IRQ */
    SIC_ENSET = 1<<3;  // KBD int=3 on SIC
    SIC_PICENSET = 1<<3;  // KBD int=3 on SIC
- 
+
+
+   timer_init();
+   // timer_start(0);
    kprintf("Welcome to WANIX in Arm\n");
+   
    init();
    kfork((int)body, 1);
    while(1){

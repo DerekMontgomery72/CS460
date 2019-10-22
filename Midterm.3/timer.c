@@ -7,13 +7,11 @@
 #define TMIS    0x5
 #define TBGLOAD 0x6
 
-typedef volatile struct timer{
-  u32 *base; // timer's base address;
-  int tick, hh, mm, ss; // per timer data area
-  char clock[16];
-}TIMER;
+
 
 volatile TIMER timer[4]; //4 timers, 2 per unit
+
+int kwakeup(int event);
 
 void timer_init()
 {
@@ -40,16 +38,21 @@ void timer_init()
 }
 
 void timer_handler(int n){
-  int i;
+  int i, preColor;
   TIMER *t = &timer[n];
+  char c;
+  lock();
   for(i=0;i<8; i++){
-    unkpchar(t->clock[i],n,70+i);
+    c = t->clock[i];
+   unkpchar(c,n,70+i);
   }
   t->tick++;
   if(t->tick == 120){
     t->tick = 0; t->ss++;
+    timerQueueHandler();
     if(t->ss ==60){
       t->ss = 0; t->mm++;
+      
       if(t->mm == 60){
 	t->mm = 0; t->hh++;
       }
@@ -58,11 +61,15 @@ void timer_handler(int n){
     t->clock[4] = '0' + (t->mm%10);t->clock[3] = '0' + (t->mm/10);
     t->clock[1] = '0' + (t->hh%10); t->clock[0] = '0' + (t->hh/10);
   }
-  color = n;
+  preColor = color;
+  color = GREEN;
   for(i=0; i<8; i++){
-    kpchar(t->clock[i], n, 70+i);
+    c = t->clock[i];
+    kpchar(c, n, 70+i);
   }
+  color = preColor;
   timer_clearInterrupt(n);
+  unlock();
 }
 
 void timer_start(int n)
@@ -82,4 +89,62 @@ void timer_stop(int n)
 {
   TIMER *tp = &timer[n];
   *(tp->base+TCNTL) &=0x7F;
+}
+
+
+
+int timerQueueHandler(){
+
+  //Decrement first item in timer queue
+  //If time remaining return
+  //else dequeue element from queue
+  ////wakeup process
+  //check next process if time remaining is zero wake it up as well
+  int i,start = 50;
+  if(timerQueue != 0){
+    int time = tDecrement(&timerQueue);
+    TQE *t;
+    t = timerQueue;
+
+    while(t != 0){
+      
+      printf("[%d %d] ->",t->pid, t->time);
+
+      start+= strlen(t->display);
+      t = t->next;
+      
+    }
+    printf("\n");
+    start = 50;
+    
+    //  printf("Proc %d Asleep Time Remaining: %d\n",timerQueue->pid, timerQueue->time);
+    while(time <= 0){
+    
+      t = tDequeue(&timerQueue);
+      kwakeup(t->event);
+      t->sleeping = 0;
+      t->pid = 0;
+      t->event = 0;
+      if(timerQueue == 0){
+	return;
+      }
+      time = timerQueue->time;
+    }
+    t = timerQueue;
+    
+    while(t != 0){
+      
+      for(i=0; i<10; i++){
+	kpchar(t->display[i],5,start+i);
+      }
+
+      start+= strlen(t->display);
+      t = t->next;
+      
+    }
+    
+  }
+  
+  return 0;
+  
 }

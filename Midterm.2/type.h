@@ -42,7 +42,7 @@ typedef unsigned int   u32;
 #define WHITE  6
 
 #define  SSIZE 1024
-#define  PSIZE 1024
+#define  PSIZE 12
 
 #define  FREE   0
 #define  READY  1

@@ -1,5 +1,8 @@
 /************* kbd.c file **************/
 
+//#queue.h
+//Derek Montgomery
+//WSUID: 11508236
 //#include "keymap"
 #include "keymap2"
 

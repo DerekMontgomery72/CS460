@@ -42,14 +42,17 @@ int uputc(UART *up, char c)
 
 int ugets(UART *up, char s[ ])
 {
+  lock();
   // Write code to input a string from a UART
+  
   while((*s = ugetc(up)) != '\r')
     {
-      printf("%s\n",s);
+      
       uputc(up,*s);
       s++;
     }
   *s=0;
+  unlock();
 }
 
 int uprints(UART *up, char *s)

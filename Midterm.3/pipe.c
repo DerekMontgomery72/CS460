@@ -1,3 +1,7 @@
+//pipe.c FIle
+//Derek Montgomery
+//Student ID: 11508236
+
 #define NPIPE 9
 
 PIPE pipe[NPIPE]; // global pipe objects
@@ -58,13 +62,13 @@ int read_pipe(PIPE *p, char buf[], int n)
 	break;
       }
     }
-    kwakeup(&p->room);  //wakeup writers
+    kwakeup((int)&p->room);  //wakeup writers
     
     if(r){
       return r;
     }
     //pipe has no data
-    ksleep(&p->data);   //sleep for data
+    ksleep((int)&p->data);   //sleep for data
   }
 }
 
@@ -90,15 +94,15 @@ int write_pipe(PIPE *p, char *buf, int n)
 	break;
       }
     }
-    kwakeup(&p->data);   //wakeup readers, if any
-    tswitch();
+    kwakeup((int)&p->data);   //wakeup readers, if any
+    // tswitch();
     
     if(n==0){
       return r;//Finished writing n Bytes
     }
     
     //still has data to write but no room
-    ksleep(&p->room);
+    ksleep((int)&p->room);
   }
   
 }
@@ -110,13 +114,15 @@ int pipe_writer()
   while(1){
     uprintf(up,"Enter a line for task1 to get : ");
     printf("task : %d waits for line from UART0\n", running->pid);
+    tswitch();
     ugets(up, line);
     uprints(up, "\r\n");
     printf("task %d : writes line=[%s] to pipe\n", running->pid, line);
     write_pipe(kpipe, line, strlen(line));
 
-    kexit(0);
+   
   }
+  //kexit(0);
 }
 
 
@@ -131,8 +137,9 @@ int pipe_reader(){
       kputc(line[i]);
     }
     printf("]\n");
-    kexit(0);
+   
   }
+  //kexit(0);
 }
 
 int runPipe(){
@@ -143,5 +150,7 @@ int runPipe(){
   kfork((int)pipe_writer, 1); // pipe writer process
   kfork((int)pipe_reader, 1); // pipe reader process
   
-
+  while(1){
+    tswitch();
+  }
 }

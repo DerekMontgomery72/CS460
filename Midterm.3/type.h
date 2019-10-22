@@ -1,5 +1,6 @@
 // defines.h file
 
+
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
@@ -42,7 +43,7 @@ typedef unsigned int   u32;
 #define WHITE  6
 
 #define  SSIZE 1024
-#define  PSIZE 1024
+#define  PSIZE 8
 
 #define  FREE   0
 #define  READY  1
@@ -51,6 +52,7 @@ typedef unsigned int   u32;
 #define  ZOMBIE 4
 #define  BUSY   5
 #define  printf  kprintf
+#define  NTIME  9
 
 typedef struct proc{
     struct proc *next;      // next proc pointer       
@@ -76,7 +78,6 @@ typedef struct pipe{
   int  data, room;    // number of data & room in pipe
   int  status;        // FREE or  BUSY
 
-
 }PIPE;
 
 typedef struct uart{
@@ -85,3 +86,24 @@ typedef struct uart{
 }UART;
 
 UART uart[4];
+
+typedef struct tqe{
+  PROC *sleeping;
+  int pid;
+  int time;
+  int event;
+  char display[10];
+  struct TQE *next;
+  
+}TQE;
+
+
+typedef volatile struct timer{
+  u32 *base; // timer's base address;
+  int tick, hh, mm, ss; // per timer data area
+  char clock[16];
+}TIMER;
+
+PROC *running;
+
+TQE timers[NTIME], *timerQueue;
