@@ -1,42 +1,15 @@
-/**** globals defined in main.c file ****/
-extern MINODE minode[NMINODE];
-extern MINODE *root;
-extern PROC   proc[NPROC], *running;
-extern OFT    NOFT[NFD],SNOFT[NFD];
-extern char   gpath[256];
-extern char   names[16][256];
-extern int    n;
-extern int fd, dev;
-extern int nblocks, ninodes, bmap, imap, inode_start;
-extern char line[256], cmd[32], pathname[256], name[64];
-char pwdline[256];
-
-#define OWNER  000700
-#define GROUP  000070
-#define OTHER  000007
+#include "type.h"
+#include "ucode.c"
 
 
-
-
-
-change_dir(char *pathname)
+int main(int argc, char *argv[])
 {
-  int ino;
-  MINODE *mip;
-  
-  if(strcmp(pathname, "") == 0){
-    running->cwd = root;
+  if(argc == 1)
+  {
+    chdir("/");
   }
-  ino = getino(pathname);
-  mip=iget(dev,ino);
-  
-    if((mip->INODE.i_mode & 0xF000) == 0x4000){
-      iput(running->cwd);
-      running->cwd = mip;
-    }
-    else{
-      iput(mip);
-      printf("ERROR: NOT A DIR\n");
-     }
-  
+  else{
+    chdir(argv[1]);
+  }
+  return;
 }

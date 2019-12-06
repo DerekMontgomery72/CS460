@@ -71,3 +71,11 @@ typedef struct dirent{
   char d_name[]; //name of entry
 }DIREENT;
 
+
+typedef struct pipe{
+  char buf[BLKSIZE];    // circular data buffer
+  int  head, tail;    // circular data index
+  int  data, room;    // number of data & room in pipe
+  int  status;        // FREE or  BUSY
+
+}PIPE;
