@@ -1,0 +1,3 @@
+as86 -o u.o u.s
+bcc -c - ansi $1.c
+ld86 u.o $1.o mtxlib /usr/lib/bcc/libc.a

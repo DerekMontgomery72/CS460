@@ -1,0 +1,155 @@
+// Globals Defined earlier. We need to figure out how to get these when in the kernel
+
+/*
+extern MINODE minode[NMINODE];
+extern MINODE *root;
+extern PROC proc[NPROC], *running;
+extern OFT NOFT[NFD],SNOFT[NFD];
+extern char gpath[256];
+extern char names[16][256];
+extern int n;
+extern int fd, dev;
+extern int nblocks, ninodes, bmap, imap, inode_start;
+extern char line[256],cmd[32],pathname[256],name[64];
+
+#define OWNER 000700
+#define GROUP 000070
+#define OTHER 000007
+*/
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <time.h>
+//#include "type.h"
+
+#include <errno.h>
+//#include "ucode.c"
+#include <sys/stat.h>
+#include <dirent.h>
+
+
+char *t1 = "xwrxwrxwr-------";
+char *t2 = "----------------";
+
+struct stat mystat, *sp;
+
+int ls_file(char *fname)
+{
+
+  struct stat fstat, *sp = &fstat;
+  int r, i;
+  char sbuf[4096];
+  r = lstat(fname, sp);
+  if(S_ISDIR(sp->st_mode))
+    {
+      printf("%c", 'd');
+    }
+  if(S_ISREG(sp->st_mode))
+    {
+      printf("%c", '-');
+    }
+  if(S_ISLNK(sp->st_mode))
+    {
+      printf("%c", 'l');
+    }
+  for(i=8; i >=0; i--)
+    {
+      if(sp->st_mode & (i<<i))
+	{
+	  printf("%c", t1[i]);
+	}
+      else
+	{
+	  printf("%c", t1[i]);
+	}
+    }
+  printf("%4d ", sp->st_nlink);
+  printf("%4d ", sp->st_uid);
+  printf("%8d ", sp->st_size);
+  
+  // strcpy(ftime, ctime(&sp->st_ctime));
+  // ftime[strlen(ftime)-1] = 0;
+  // printf("%s ", ftime);
+  
+  printf("%s", basename(fname));
+  if(S_ISLNK(sp->st_mode))
+    {
+      r = readlink(fname, sbuf);
+      printf(" -> %s", sbuf);
+    }
+  printf("\n");
+  
+  
+}
+
+
+
+int ls_dir(char *dname)
+{
+
+  char name[256];
+  DIR *dp;
+  char dirName[256];
+
+  struct dirent *ep;
+  
+  // open DIR to read names
+  dp = opendir(dname);
+  while(ep = readdir(dp))
+    {
+      strcpy(name, ep->d_name);
+      strcpy(dirName,name);
+      if(!strcmp(name ,".") || !strcmp(name, ".."))
+	{
+	  continue; //skip over . and .. entries
+	}
+      strcpy(name, dname);
+      strcat(name, "/");
+      strcat(name, dirName);
+      ls_file(name);   // call list_file()
+    }
+}
+
+int main(int argc, char *argv[])
+{
+  printf("Start\n");
+  struct stat mystat, *sp;
+  int r;
+  char *s;
+  char filename[1024], cwd[1024];
+  s = argv[1]; // ls [filename]
+  if(argc == 1) //no parameter: ls CWD
+    s = "./";
+  sp = &mystat;
+  
+  printf("Get FIle or DIR\n");
+  
+  if((r = stat(s,sp)) < 0)
+    {
+      // stat() syscall
+      perror("ls");
+      printf("Stat Failed\n");
+      exit(1);
+    }
+  
+  printf("stat FILE done\n");
+  strcpy(filename,s);
+  
+  if(s[0] != '/'){
+    getcwd(cwd);
+    printf("Got CWD\n");
+    strcpy(filename, cwd);
+    strcat(filename, "/");
+    strcat(filename,s);
+  }
+  if(S_ISDIR(sp->st_mode)){
+    ls_dir(filename); //list DIR
+  }
+  else
+    {
+      ls_file(filename);
+    }
+}

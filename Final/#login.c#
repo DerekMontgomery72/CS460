@@ -1,0 +1,85 @@
+///////*Algorithm for Login ////////////
+// login.c : Upon entry, argv[0]=login, argv[1]=/dev/ttyX
+
+/*
+#include "ucode.c"
+int in, out, err;
+char name[128],password[128]
+main(int argc, char *argv[])
+{
+(1). close file descriptors 0,1 inherited from INIT.
+(2). open argv[1] 3 times as in(0), out(1), err(2).
+(3). settty(argv[1]); // set tty name string in PROC.tty
+(4). open /etc/passwd file for READ;
+while(1){
+(5).
+printf("login:");
+gets(name);
+printf("password:"); gets(password);
+for each line in /etc/passwd file do{
+tokenize user account line;
+(6).
+if (user has a valid account){
+(7).
+change uid, gid to user's uid, gid; // chuid()
+(8).
+change cwd to user's home DIR // chdir()
+close opened /etc/passwd file // close()
+exec to program in user account // exec()
+}
+}
+printf("login failed, try again\n");
+}
+}
+
+*/
+#include "ucode.c"
+int in, out, err;
+char name[128], password[128];
+
+int main(int argc, char *argv[])
+{
+  //close file descriptors
+
+
+  //open argv[1] 3 times as in(0), out(1), err(2).
+
+  in = atoi(argv[1]);
+  char *line, *ptr;
+
+  settty(argv[1]); // set tty name string in PROC.tty
+  FILE *passwdFile = open("/etc/passwd");
+  if(passwdFile == NULL){
+    printf("Error Opening Password FILE\n");
+    return;
+  }
+  while(1){
+    printf("login:");
+    gets(name);
+    printf("password:");
+    gets(password);
+    while(!passwdFile.eof()){
+     line = getline(passwdFile);
+     ptr = strtok(line,':');
+     ptr = strtok(line, 0);
+     strcpy(name, ptr);
+
+     //TODO: find if account exists
+     //      check password
+
+     //Password Exists
+     chuid(name);
+
+
+
+     
+    }
+    //Login Failed
+    printf("Login failed, try again\n");
+  }
+}
+
+     
+
+
+    
